@@ -25,11 +25,11 @@ then
             # Loading bar
             while true;do echo -n .;sleep 1;done &
                 # Erase the nginx.log file
-                > ../log/nginx.log
+                > ../../log/nginx.log
                 # Remove & purge (Redirection to nginx.log)
-                apt remove nginx nginx-common -y --no-install-recommends apt-utils &> ../log/nginx.log
-                apt purge nginx nginx-common -y --no-install-recommends apt-utils &> ../log/nginx.log
-                apt autoremove -y --no-install-recommends apt-utils &> ../log/nginx.log
+                apt remove nginx nginx-common -y --no-install-recommends apt-utils &> ../../log/nginx.log
+                apt purge nginx nginx-common -y --no-install-recommends apt-utils &> ../../log/nginx.log
+                apt autoremove -y --no-install-recommends apt-utils &> ../../log/nginx.log
                 kill $!; trap 'kill $!' SIGTERM
             echo "nginx was uninstalled!"
             break;;
@@ -49,7 +49,7 @@ then
     # Loading bar
     while true;do echo -n .;sleep 1;done &
         # Installation (Redirection to nginx.log)
-        apt install nginx nginx-common -y --no-install-recommends apt-utils &> ../log/nginx.log
+        apt install nginx nginx-common -y --no-install-recommends apt-utils &> ../../log/nginx.log
         kill $!; trap 'kill $!' SIGTERM
     if !command -v nginx &> /dev/null
     then

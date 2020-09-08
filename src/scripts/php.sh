@@ -26,11 +26,11 @@ then
             # Loading bar
             while true;do echo -n .;sleep 1;done &
                 # Erase the php.log file
-                > ../log/php.log
+                > ../../log/php.log
                 # Remove & purge (Redirection to php.log)
-                apt remove php7.3-fpm -y --no-install-recommends apt-utils &> ../log/php.log
-                apt purge php7.3-fpm -y --no-install-recommends apt-utils &> ../log/php.log
-                apt autoremove -y --no-install-recommends apt-utils &> ../log/php.log
+                apt remove php7.3-fpm -y --no-install-recommends apt-utils &> ../../log/php.log
+                apt purge php7.3-fpm -y --no-install-recommends apt-utils &> ../../log/php.log
+                apt autoremove -y --no-install-recommends apt-utils &> ../../log/php.log
                 kill $!; trap 'kill $!' SIGTERM
                 echo "php7.3-fpm was uninstalled!"
             break;;
@@ -51,9 +51,9 @@ then
             # Loading bar
             while true;do echo -n .;sleep 1;done &
                 # Remove & purge (Redirection to php.log)
-                apt remove php7.3-mysql -y --no-install-recommends apt-utils &> ../log/php.log
-                apt purge php7.3-mysql -y --no-install-recommends apt-utils &> ../log/php.log
-                apt autoremove -y --no-install-recommends apt-utils &> ../log/php.log
+                apt remove php7.3-mysql -y --no-install-recommends apt-utils &> ../../log/php.log
+                apt purge php7.3-mysql -y --no-install-recommends apt-utils &> ../../log/php.log
+                apt autoremove -y --no-install-recommends apt-utils &> ../../log/php.log
                 kill $!; trap 'kill $!' SIGTERM
             echo "php7.3-mysql was uninstalled!"
             
@@ -74,7 +74,7 @@ then
     # Loading bar
     while true;do echo -n .;sleep 1;done &
         # Installation (Redirection to php.log)
-        apt install php7.3-fpm -y --no-install-recommends apt-utils &> ../log/php.log
+        apt install php7.3-fpm -y --no-install-recommends apt-utils &> ../../log/php.log
         kill $!; trap 'kill $!' SIGTERM
     dpkg -s php7.3-fpm &> /dev/null
     if [ $? -ne 0 ]
@@ -95,7 +95,7 @@ then
     # Loading bar
     while true;do echo -n .;sleep 1;done &
         # Installation (Redirection to php.log)
-        apt install php7.3-mysql -y --no-install-recommends apt-utils &> ../log/php.log
+        apt install php7.3-mysql -y --no-install-recommends apt-utils &> ../../log/php.log
         kill $!; trap 'kill $!' SIGTERM
     dpkg -s php7.3-mysql &> /dev/null
     if [ $? -ne 0 ]
