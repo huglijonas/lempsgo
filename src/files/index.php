@@ -10,7 +10,7 @@
     body,h1 {font-family: "Raleway", sans-serif}
     body, html {height: 100%}
     .bgimg {
-      background-image: url('/w3images/forestbridge.jpg');
+      background-image: url('https://www.w3schools.com/w3images/forestbridge.jpg');
       min-height: 100%;
       background-position: center;
       background-size: cover;
@@ -20,12 +20,12 @@
 
     <div class="bgimg w3-display-container w3-animate-opacity w3-text-white">
       <div class="w3-display-topleft w3-padding-large w3-xlarge">
-        Logo
+        Lemp's Go
       </div>
       <div class="w3-display-middle">
         <h1 class="w3-jumbo w3-animate-top">WELCOME</h1>
         <hr class="w3-border-grey" style="margin:auto;width:40%">
-        <a class="w3-large w3-center" href="info.php">PHP Info</a>
+        <p class="w3-large w3-center"><a href="info.php">PHP Info</a></p>
       </div>
       <div class="w3-display-bottomleft w3-padding-large">
         Powered by <a href="https://www.w3schools.com/w3css/default.asp" target="_blank">w3.css</a>

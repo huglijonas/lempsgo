@@ -126,12 +126,12 @@ while true; do
 done
 if [ $WEBSITE == true ]
 then
-    if [[ ! -d "/var/www/" ]]
+    if [[ ! -d "/var/www/html" ]]
     then
-        mkdir /var/www
+        mkdir /var/www/html
     fi
-    mkdir /var/www/lempsgo/; cp src/files/index.php /var/www/lempsgo/index.php; cp src/files/info.php /var/www/lempsgo/info.php;
-    chown -R www-data:www-data /var/www/lempsgo
+    mkdir /var/www/html/lempsgo/; cp src/files/index.php /var/www/html/lempsgo/index.php; cp src/files/info.php /var/www/html/lempsgo/info.php;
+    chown -R www-data:www-data /var/www/html/lempsgo
     
     cp src/files/lempsgo /etc/nginx/sites-available/lempsgo; ln -s /etc/nginx/sites-available/lempsgo /etc/nginx/sites-enabled/
     
@@ -158,5 +158,5 @@ fi
 
 echo
 printf $GREEN
-echo "LEMP'S GO! Go to the server URL like this: 127.0.0.1/lempsgo"
+echo "LEMP'S GO! Go to the server URL like this: http://lempsgo.localhost/"
 printf $NOCOLOR

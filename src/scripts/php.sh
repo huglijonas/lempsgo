@@ -157,3 +157,7 @@ then
     echo "[PHP7.3-FPM] Sock path changed in /etc/php/7.3/fpm/pool.d/www.conf"
     printf $NOCOLOR
 fi
+sed -i 's/; cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/g' /etc/php/7.3/fpm/php.ini
+prinf $ORANGE
+echo "[PHP7.3-FPM] Pathinfo set to 0 in /etc/php/7.3/fpm/php.ini"
+echo $NOCOLOR
