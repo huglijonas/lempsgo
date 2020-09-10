@@ -158,6 +158,6 @@ then
     printf $NOCOLOR
 fi
 sed -i 's/; cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/g' /etc/php/7.3/fpm/php.ini
-prinf $ORANGE
+printf $ORANGE
 echo "[PHP7.3-FPM] Pathinfo set to 0 in /etc/php/7.3/fpm/php.ini"
-echo $NOCOLOR
+printf $NOCOLOR
