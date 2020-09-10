@@ -37,6 +37,46 @@ LIGHTPURPLE='\033[1;35m'
 LIGHTCYAN='\033[1;36m'
 WHITE='\033[1;37m'
 
+# ----------------------------------
+# Uninstall function
+# ----------------------------------
+function uninstall() {
+    PACKAGE=$1
+    LOG="src/log/"
+    return=true
+
+    case $PACKAGE in
+        [nginx]*) LOG+="nginx.log";;
+        [php7.3]*) LOG+="php.log";;
+        [mariadb]*) LOG+="mariadb.log";;
+    esac
+    
+    dpkg -s $PACKAGE &> /dev/null
+    if [ $? == 0 ] then
+    # Loop to ask if the user want to reinstall mariadb
+    while true; do
+        read -p "[${PACKAGE^^}] seems to be already installed. Would you reinstall the package? (y/n)" yn
+        case $yn in
+            [Yy]* ) printf $GREEN; echo "[${PACKAGE^^}] Uninstall in progress"; printf $WHITE;
+            # Loading bar
+            while true;do echo -n .;sleep 1;done &
+                # Erase the nginx.log file
+                > src/log/mariadb.log
+                # Remove & purge (Redirection to mariadb.log)
+                apt remove $PACKAGE -y --no-install-recommends apt-utils &> $LOG
+                apt purge $PACKAGE -y --no-install-recommends apt-utils &> $LOG
+                apt autoremove -y --no-install-recommends apt-utils &> $LOG
+                kill $!; trap 'kill $!' SIGTERM
+            printf $GREEN
+            echo "[${PACKAGE^^}] Successfully uninstalled!"
+            printf $NOCOLOR
+            break;;
+            [Nn]* ) printf $RED; echo "[${PACKAGE^^}] Deployment canceled"; printf $NOCOLOR; local return=false; break;;
+            * ) printf $RED; echo "Please answer yes or no."; printf $NOCOLOR;;
+        esac
+    done
+}
+
 printf $WHITE
 echo -e " +--------------------------------------------+"
 sleep .2
