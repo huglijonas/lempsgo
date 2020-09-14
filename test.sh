@@ -194,7 +194,7 @@ function mariadb_init()
         then
             printf $GREEN; echo "Anonymous users removed!"; printf $NOCOLOR;
         else
-            printf $RED; echo "An error occured! Exiting..."; printf $NOCOLOR;
+            printf $RED; echo "An error occured!"; printf $NOCOLOR;
         fi
         echo
     fi
@@ -280,6 +280,7 @@ function mariadb_init()
 # ----------------------------------
 function createTemplate()
 {
+    result = false
     while true; do
         printf $WHITE
         read -p "[TEMPLATE] Do you want to initialize a fake website to see how NGINX works? (y/n)" yn
@@ -291,6 +292,7 @@ function createTemplate()
     done
     if [ $TEMPLATE == true ] 
     then
+        result=true
         if [[ ! -d "/var/www/html" ]]
         then
             mkdir /var/www/html
@@ -325,6 +327,8 @@ function createTemplate()
         echo "LEMP'S GO! Go to the server URL like this: http://lempsgo.localhost/"
         printf $NOCOLOR
     fi
+    
+    local $result
 }
 
 # ----------------------------------
@@ -428,6 +432,10 @@ function generateCertificate()
     cp src/files/certificate.conf /etc/nginx/snippets/certificate.conf
     cp src/files/ssl-params.conf /etc/nginx/snippets/ssl-params.conf
     cat src/files/lempsgo-ssl > /etc/nginx/sites-available/lempsgo
+    
+    printf $GREEN
+    echo "LEMP'S GO! Go to the server URL like this: https://lempsgo.localhost/"
+    printf $NOCOLOR
 }
 
 # ----------------------------------
@@ -548,15 +556,18 @@ printf $GREEN
 printf "Initialization of template"; sleep .2; printf "."; sleep .2; printf "."; sleep .2; printf "."
 printf $NOCOLOR
 echo
-createTemplate
+createTemplate templateCreation
 echo
 
 # ----------------------------------
 # CERTIFICATE
 # ----------------------------------
-printf $PURPLE
-printf "Initialization of certificate"; sleep .2; printf "."; sleep .2; printf "."; sleep .2; printf "."
-printf $NOCOLOR
-echo
-generateCertificate
+if [[ $templateCreation == true ]]
+then
+    printf $PURPLE
+    printf "Initialization of certificate"; sleep .2; printf "."; sleep .2; printf "."; sleep .2; printf "."
+    printf $NOCOLOR
+    echo
+    generateCertificate
+fi
 # --------------------------------------------------------------------
