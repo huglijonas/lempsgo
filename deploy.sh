@@ -18,6 +18,46 @@
 # ----------------------------------
 
 # ----------------------------------
+# Options & Arguments
+# ----------------------------------
+shortOpts=hvs:
+longOpts=help,verbose,steps:
+
+# Read options
+OPTS=$(getopt --options $shortOpts --long $longOpts --name "$0" -- "$@")
+
+if [ $? != 0 ]
+then
+    printf $RED
+    echo "Failed to parse options...exiting." >&2 ;
+    printf $NOCOLOR
+    exit 1 ;
+fi
+eval set -- "$OPTS"
+
+# Initial values
+help=false
+verbose=false
+steps=false
+
+# Loop
+while true; do
+    case $1 in
+        -h | --help )
+        help=true
+        break;;
+        -v | --verbose )
+        verbose=true
+        break;;
+        -s | --steps )
+        steps=true
+        break;;
+        * )
+        break;;
+    esac
+done
+
+# ----------------------------------
 # Colors
 # ----------------------------------
 NOCOLOR='\033[0m'
@@ -40,7 +80,7 @@ WHITE='\033[1;37m'
 # --------------------------------------------------------------------
 # Install function
 # ----------------------------------
-function install() 
+function install()
 {
     PACKAGE=$1
     LOG="src/log/"
@@ -49,9 +89,9 @@ function install()
         [php7.3]* ) LOG+="php.log";;
         [mariadb]* ) LOG+="mariadb.log";;
     esac
-    
+
     printf $GREEN;
-    echo "[${PACKAGE^^}] Installation in progress"; 
+    echo "[${PACKAGE^^}] Installation in progress";
     printf $WHITE
     # Loading bar
     while true;do echo -n .;sleep 1;done &
@@ -86,9 +126,9 @@ function uninstall()
         [php7.3]* ) LOG+="php.log";;
         [mariadb]* ) LOG+="mariadb.log";;
     esac
-    
+
     dpkg -s $PACKAGE &> /dev/null
-    if [ $? == 0 ] 
+    if [ $? == 0 ]
     then
         # Loop to ask if the user want to reinstall mariadb
         while true; do
@@ -142,7 +182,7 @@ function change_sock()
 function mariadb_init()
 {
     service mysql start > /dev/null
-    
+
     #
     # ROOT PWD
     while true; do
@@ -176,7 +216,7 @@ function mariadb_init()
             fi
         done
     fi
-    
+
     #
     # ANONYMOUS USERS
     while true; do
@@ -198,7 +238,7 @@ function mariadb_init()
         fi
         echo
     fi
-    
+
     #
     # DISALLOW REMOTE ROOT LOGIN
     while true; do
@@ -220,7 +260,7 @@ function mariadb_init()
         fi
         echo
     fi
-    
+
     #
     # REMOVE TEST DATABASE
     while true; do
@@ -242,7 +282,7 @@ function mariadb_init()
         fi
         echo
     fi
-    
+
     #
     # INSTALL BLACKHOLE
     while true; do
@@ -264,7 +304,7 @@ function mariadb_init()
         fi
         echo
     fi
-    
+
     mysql -e "FLUSH PRIVILEGES;"
     if [ $? == 0 ]
     then
@@ -290,7 +330,7 @@ function createTemplate()
             *) printf $RED; echo "Please answer yes or no."; printf $NOCOLOR;;
         esac
     done
-    if [ $TEMPLATE == true ] 
+    if [ $TEMPLATE == true ]
     then
         result=true
         if [[ ! -d "/var/www/html" ]]
@@ -321,13 +361,13 @@ function createTemplate()
             service php7.3-fpm start && service php7.3-fpm restart
             service mysql restart
         fi
-        
+
         echo
         printf $GREEN
         echo "LEMP'S GO! Go to the server URL like this: http://lempsgo.localhost/"
         printf $NOCOLOR
     fi
-    
+
     local $result
 }
 
@@ -345,7 +385,7 @@ function generateCertificate()
             *) printf $RED; echo "Please answer yes or no."; printf $NOCOLOR;;
         esac
     done
-    
+
     # Country
     CountryRegex='^[A-Z]{2}$'
     while true; do
@@ -358,7 +398,7 @@ function generateCertificate()
             printf $RED; echo "Please enter a correct country."; printf $NOCOLOR;
         fi
     done
-    
+
     # State
     StateRegex='^([a-zA-Z]+|[a-zA-Z]+\s[a-zA-Z]+)$'
     while true; do
@@ -371,7 +411,7 @@ function generateCertificate()
             printf $RED; echo "Please enter a correct state."; printf $NOCOLOR;
         fi
     done
-    
+
     # City
     CityRegex='^([a-zA-Z]+|[a-zA-Z]+\s[a-zA-Z]+)$'
     while true; do
@@ -384,7 +424,7 @@ function generateCertificate()
             printf $RED; echo "Please enter a correct city."; printf $NOCOLOR;
         fi
     done
-    
+
     # Organization
     OrgRegex='|(^([a-zA-Z]+|[a-zA-Z]+\s[a-zA-Z]+)$)'
     while true; do
@@ -401,7 +441,7 @@ function generateCertificate()
             printf $RED; echo "Please enter a correct organization."; printf $NOCOLOR;
         fi
     done
-    
+
     # Website
     WebRegex='^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$'
     while true; do
@@ -414,25 +454,25 @@ function generateCertificate()
             printf $RED; echo "Please enter an correct URL."; printf $NOCOLOR;
         fi
     done
-    
+
     openssl req -new -subj "/C=${Country^^}/ST=$State/L=$City/O=$Organization/CN=$Website" -x509 -nodes -days 365 -newkey rsa:4096 -keyout /etc/ssl/private/lempsgo.key -out /etc/ssl/certs/lempsgo.crt
-    
+
     if [ $? -ne 0 ]
     then
         printf $RED; echo "A fatal error occured..."; printf $NOCOLOR
     fi
-    
+
     echo
     printf $PURPLE
     printf "Generate a Diffie-Hellman key"; sleep .2; printf "."; sleep .2; printf "."; sleep .2; printf ".";
     echo
     printf $WHITE
     openssl dhparam -dsaparam -out /etc/nginx/dhp_key.pem 4096
-    
+
     cp src/files/certificate.conf /etc/nginx/snippets/certificate.conf
     cp src/files/ssl-params.conf /etc/nginx/snippets/ssl-params.conf
     cat src/files/lempsgo-ssl > /etc/nginx/sites-available/lempsgo
-    
+
     printf $GREEN
     echo "LEMP'S GO! Go to the server URL like this: https://lempsgo.localhost/"
     printf $NOCOLOR
@@ -461,7 +501,7 @@ echo -e " |  | |  \033[0;32m| __\033[0;33m|  \/  \033[0;34m| _ \033[1;37m( ) __|
 sleep .2
 echo -e " |  | |__\033[0;32m| _|\033[0;33m| |\/| \033[0;34m|  _\033[1;37m//\__ \ \033[0;36m| (_ | (_) |\033[1;37m  |"
 sleep .2
-echo -e " |  |____\033[0;32m|___\033[0;33m|_|  |_\033[0;34m|_|\033[1;37m   |___/ \033[0;36m \___|\___/ \033[1;37m  |" 
+echo -e " |  |____\033[0;32m|___\033[0;33m|_|  |_\033[0;34m|_|\033[1;37m   |___/ \033[0;36m \___|\___/ \033[1;37m  |"
 sleep .2
 echo -e " |                                            |"
 sleep .2
