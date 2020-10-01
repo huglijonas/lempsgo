@@ -18,46 +18,6 @@
 # ----------------------------------
 
 # ----------------------------------
-# Options & Arguments
-# ----------------------------------
-shortOpts=hvs:
-longOpts=help,verbose,steps:
-
-# Read options
-OPTS=$(getopt --options $shortOpts --long $longOpts --name "$0" -- "$@")
-
-if [ $? != 0 ]
-then
-    printf $RED
-    echo "Failed to parse options...exiting." >&2 ;
-    printf $NOCOLOR
-    exit 1 ;
-fi
-eval set -- "$OPTS"
-
-# Initial values
-help=false
-verbose=false
-steps=false
-
-# Loop
-while true; do
-    case $1 in
-        -h | --help )
-        help=true
-        break;;
-        -v | --verbose )
-        verbose=true
-        break;;
-        -s | --steps )
-        steps=true
-        break;;
-        * )
-        break;;
-    esac
-done
-
-# ----------------------------------
 # Colors
 # ----------------------------------
 NOCOLOR='\033[0m'
@@ -76,6 +36,96 @@ LIGHTBLUE='\033[1;34m'
 LIGHTPURPLE='\033[1;35m'
 LIGHTCYAN='\033[1;36m'
 WHITE='\033[1;37m'
+
+# ----------------------------------
+# Global variables
+# ----------------------------------
+versionDeploy="Ver 1.0.0"
+distribution=$(lsb_release -sd)
+copyrightDeploy="Copyright (c) 2020-$(date +"%Y"), Lemp's Go, Debian Deployment: Nginx, Php, Mariadb"
+
+# ----------------------------------
+# Help function
+# ----------------------------------
+function helpCmd()
+{
+    printf $WHITE
+
+    echo "lempsgo  $versionDeploy Distrib $distribution"
+    echo -e "$copyrightDeploy\r\n"
+
+    printf $LIGHTGREEN
+    echo -e "Usage: sudo ./deploy.sh [OTPIONS]\r\n"
+
+    printf $WHITE
+    echo "Options:"
+    echo -e "  -s, --steps\t\tEnable the steps mode"
+    echo -e "  -v, --verbose\t\tEnable the verbose mode"
+    echo -e "  -h, --help\t\tPrint help informations and quit"
+    echo -e "  -V, --version\t\tPrint version information and quit"
+    printf $NOCOLOR
+    exit
+}
+
+# ----------------------------------
+# Version function
+# ----------------------------------
+function versionCmd()
+{
+    printf $WHITE
+    echo "lempsgo  $versionDeploy"
+    printf $NOCOLOR
+    exit
+}
+
+# ----------------------------------
+# Options & Arguments
+# ----------------------------------
+shortOpts=vshV:
+longOpts=verbose,steps,help,version
+
+# Read options
+OPTS=$(getopt --options $shortOpts --long $longOpts --name "$0" -- "$@")
+
+if [ $? != 0 ]
+then
+    printf $RED
+    echo "Failed to parse options...exiting." >&2 ;
+    printf $NOCOLOR
+    exit 1 ;
+fi
+eval set -- "$OPTS"
+
+# Initial values
+verbose=false
+steps=false
+help=false
+version=false
+
+# Loop
+while true; do
+    case $1 in
+        -h | --help )
+        help=true
+        printf $WHITE
+        helpCmd
+        printf $NOCOLOR
+        exit
+        break;;
+        -v | --verbose )
+        verbose=true
+        break;;
+        -s | --steps )
+        steps=true
+        break;;
+        --version)
+        version=true
+        versionCmd
+        break;;
+        * )
+        break;;
+    esac
+done
 
 # --------------------------------------------------------------------
 # Install function
@@ -120,6 +170,7 @@ function uninstall()
     PACKAGE=$1
     LOG="src/log/"
     result=true
+    uninstall=true
 
     case $PACKAGE in
         [nginx]* ) LOG+="nginx.log";;
@@ -130,28 +181,37 @@ function uninstall()
     dpkg -s $PACKAGE &> /dev/null
     if [ $? == 0 ]
     then
-        # Loop to ask if the user want to reinstall mariadb
-        while true; do
-            read -p "[${PACKAGE^^}] seems to be already installed. Would you reinstall the package? (y/n)" yn
-            case $yn in
-                [Yy]* ) printf $GREEN; echo -e "[${PACKAGE^^}] Uninstall in progress"; printf $WHITE;
-                # Loading bar
-                while true;do echo -n .;sleep 1;done &
-                    # Erase the nginx.log file
-                    > $LOG
-                    # Remove & purge (Redirection to mariadb.log)
-                    apt remove $PACKAGE -y --no-install-recommends apt-utils &> $LOG
-                    apt purge $PACKAGE -y --no-install-recommends apt-utils &> $LOG
-                    apt autoremove -y --no-install-recommends apt-utils &> $LOG
-                    kill $!; trap 'kill $!' SIGTERM
+        if $steps; then
+            # Loop to ask if the user want to reinstall mariadb
+            while true; do
+                read -p "[${PACKAGE^^}] seems to be already installed. Would you reinstall the package? (y/n)" yn
+                case $yn in
+                    [Yy]* ) uninstall=true; break;;
+                    [Nn]* ) uninstall=false; break;;
+                    * ) printf $RED; echo "Please answer yes or no."; printf $NOCOLOR
+                esac
+            done
+        fi
+
+        # Uninstall
+        if $uninstall; then
+            printf $GREEN; echo -e "[${PACKAGE^^}] Uninstall in progress"; printf $WHITE;
+            # Loading bar
+            while true;do echo -n .;sleep 1;done &
+                # Erase the nginx.log file
+                > $LOG
+                # Remove & purge (Redirection to mariadb.log)
+                apt remove $PACKAGE -y --no-install-recommends apt-utils &> $LOG
+                apt purge $PACKAGE -y --no-install-recommends apt-utils &> $LOG
+                apt autoremove -y --no-install-recommends apt-utils &> $LOG
+                kill $!; trap 'kill $!' SIGTERM
+
                 printf $GREEN
                 echo -e "[${PACKAGE^^}] Successfully uninstalled!"
                 printf $NOCOLOR
-                break;;
-                [Nn]* ) printf $RED; echo "[${PACKAGE^^}] Deployment canceled"; printf $NOCOLOR; result=false; break;;
-                * ) printf $RED; echo "Please answer yes or no."; printf $NOCOLOR;;
-            esac
-        done
+        else
+            printf $RED; echo "[${PACKAGE^^}] Deployment canceled"; printf $NOCOLOR; result=false;
+        fi
     fi
     echo
     local $result
@@ -320,16 +380,19 @@ function mariadb_init()
 # ----------------------------------
 function createTemplate()
 {
+    TEMPLATE=true
     result = false
-    while true; do
-        printf $WHITE
-        read -p "[TEMPLATE] Do you want to initialize a fake website to see how NGINX works? (y/n)" yn
-        case $yn in
-            [Yy]*) TEMPLATE=true; break;;
-            [Nn]*) TEMPLATE=false; break;;
-            *) printf $RED; echo "Please answer yes or no."; printf $NOCOLOR;;
-        esac
-    done
+    if $steps; then
+        while true; do
+            printf $WHITE
+            read -p "[TEMPLATE] Do you want to initialize a fake website to see how NGINX works? (y/n)" yn
+            case $yn in
+                [Yy]*) TEMPLATE=true; break;;
+                [Nn]*) TEMPLATE=false; break;;
+                *) printf $RED; echo "Please answer yes or no."; printf $NOCOLOR;;
+            esac
+        done
+    fi
     if [ $TEMPLATE == true ]
     then
         result=true
@@ -376,15 +439,19 @@ function createTemplate()
 # ----------------------------------
 function generateCertificate()
 {
+    CERT=true
     printf $WHITE
-    while true; do
-        read -p "[CERTIFICATE] Do you want to generate a certificate for the fake website to see how NGINX and HTTPS works? (y/n)" yn
-        case $yn in
-            [Yy]*) CERT=true; break;;
-            [Nn]*) CERT=false; break;;
-            *) printf $RED; echo "Please answer yes or no."; printf $NOCOLOR;;
-        esac
-    done
+
+    if $steps; then
+        while true; do
+            read -p "[CERTIFICATE] Do you want to generate a certificate for the fake website to see how NGINX and HTTPS works? (y/n)" yn
+            case $yn in
+                [Yy]*) CERT=true; break;;
+                [Nn]*) CERT=false; break;;
+                *) printf $RED; echo "Please answer yes or no."; printf $NOCOLOR;;
+            esac
+        done
+    fi
 
     # Country
     CountryRegex='^[A-Z]{2}$'
@@ -488,6 +555,7 @@ if [ "$EUID" -ne 0 ]
     printf $NOCOLOR
   exit
 fi
+# --------------------------------------------------------------------
 
 # --------------------------------------------------------------------
 # BEGIN SCRIPT
@@ -610,4 +678,3 @@ then
     echo
     generateCertificate
 fi
-# --------------------------------------------------------------------

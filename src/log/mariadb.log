@@ -1,0 +1,15 @@
+
+WARNING: apt does not have a stable CLI interface. Use with caution in scripts.
+
+Lecture des listes de paquets…
+Construction de l'arbre des dépendances…
+Lecture des informations d'état…
+Les paquets suivants seront ENLEVÉS :
+  apt-utils mariadb-server ubuntu-minimal
+0 mis à jour, 0 nouvellement installés, 3 à enlever et 0 non mis à jour.
+Après cette opération, 973 ko d'espace disque seront libérés.
+(Lecture de la base de données... (Lecture de la base de données... 5%(Lecture de la base de données... 10%(Lecture de la base de données... 15%(Lecture de la base de données... 20%(Lecture de la base de données... 25%(Lecture de la base de données... 30%(Lecture de la base de données... 35%(Lecture de la base de données... 40%(Lecture de la base de données... 45%(Lecture de la base de données... 50%(Lecture de la base de données... 55%(Lecture de la base de données... 60%(Lecture de la base de données... 65%(Lecture de la base de données... 70%(Lecture de la base de données... 75%(Lecture de la base de données... 80%(Lecture de la base de données... 85%(Lecture de la base de données... 90%(Lecture de la base de données... 95%(Lecture de la base de données... 100%(Lecture de la base de données... 214619 fichiers et répertoires déjà installés.)
+Suppression de ubuntu-minimal (1.450.2) ...
+Suppression de apt-utils (2.0.2ubuntu0.1) ...
+Suppression de mariadb-server (1:10.3.22-1ubuntu1) ...
+Traitement des actions différées (« triggers ») pour man-db (2.9.1-1) ...
